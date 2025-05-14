@@ -1,0 +1,9 @@
+---
+- name: Setup Decoy File
+  hosts: ubuntu
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Setup File
+      ansible.builtin.include_tasks: tasks/cloud_setup/copy_file.yml
+

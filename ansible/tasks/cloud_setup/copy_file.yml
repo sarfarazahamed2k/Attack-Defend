@@ -1,0 +1,5 @@
+- name: Create file in /home/user_administrator
+  copy:
+    src: "/workspace/files/Customer_Account_Details.xlsx"
+    dest: "/home/user_administrator/Customer_Account_Details.xlsx"
+

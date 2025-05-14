@@ -1,0 +1,30 @@
+domain_name: "${domain_name}"
+
+domain_users:
+  - username: "${scenario1_users[0].username}"
+    description: "${scenario1_users[0].description}"
+    display_name: "${scenario1_users[0].display_name}"
+    password: "${scenario1_users[0].password}"
+    ou: "${scenario1_users[0].ou}"
+    groups:
+      - "${scenario1_users[0].groups[0]}"
+  - username: "${scenario1_users[1].username}"
+    description: "${scenario1_users[1].description}"
+    display_name: "${scenario1_users[1].display_name}"
+    password: "${scenario1_users[1].password}"
+    ou: "${scenario1_users[1].ou}"
+    groups:
+      - "${scenario1_users[1].groups[0]}"
+
+users:
+%{ for user in scenario1_config.users ~}
+  - "${user}"
+%{ endfor ~}
+
+group: "${scenario1_config.group}"
+
+run_as_username: "${domain_admin}"
+run_as_password: "${domain_admin_password}"
+
+chrome_installer_url: "${scenario1_config.chrome_installer_url}"
+temp_path: "${scenario1_config.temp_path}"

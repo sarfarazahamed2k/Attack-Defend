@@ -1,0 +1,25 @@
+- name: Update apt and install packages
+  ansible.builtin.shell: |
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update --allow-insecure-repositories && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated tmux python3 python3-apt evil-winrm john expect kerberoast azure-cli dotnet-sdk-6.0
+  args:
+    executable: /bin/bash
+  become: yes
+
+- name: Download PowerShell Empire package
+  get_url:
+    url: https://kali.download/kali/pool/main/p/powershell-empire/powershell-empire_5.12.2-0kali1_all.deb
+    dest: /tmp/powershell-empire_5.12.2-0kali1_all.deb
+
+- name: Install PowerShell Empire package
+  ansible.builtin.shell:
+    cmd: apt install -y --allow-unauthenticated /tmp/powershell-empire_5.12.2-0kali1_all.deb
+  become: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Fix broken dependencies with apt-get -f install
+  ansible.builtin.shell:
+    cmd: apt-get -f install -y
+  become: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive

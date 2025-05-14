@@ -1,0 +1,14 @@
+- name: Add AD Users
+  microsoft.ad.user:
+    name: "{{ item.display_name }}"
+    description: "{{ item.description }}"
+    sam_account_name: "{{ item.username }}"
+    upn: "{{ item.username }}@{{ domain_name }}"
+    password: "{{ item.password }}"
+    path: "{{ item.ou }}"
+    groups:
+      add: "{{ item.groups }}"
+    state: present
+    enabled: yes
+    update_password: on_create
+  loop: "{{ domain_users }}"

@@ -1,0 +1,34 @@
+---
+- name: Create Sysmon directory
+  win_file:
+    path: C:\Sysmon
+    state: directory
+
+- name: Download Sysmon zip file
+  win_get_url:
+    url: https://download.sysinternals.com/files/Sysmon.zip
+    dest: C:\Sysmon\Sysmon.zip
+    validate_certs: yes
+
+- name: Extract Sysmon zip
+  win_unzip:
+    src: C:\Sysmon\Sysmon.zip
+    dest: C:\Sysmon
+    delete_archive: yes
+
+- name: Download SwiftOnSecurity Sysmon config
+  win_get_url:
+    url: https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/refs/heads/master/sysmonconfig-export.xml
+    dest: C:\Sysmon\sysmonconfig.xml
+    validate_certs: yes
+
+- name: Install Sysmon with SwiftOnSecurity config
+  win_shell: |
+    C:\Sysmon\Sysmon64.exe -accepteula -i C:\Sysmon\sysmonconfig.xml -h sha256 -l
+
+
+# - name: Copy Sysmon config file
+#   win_copy:
+#     src: files/sysmonconfig.xml
+#     dest: C:\Sysmon\sysmonconfig.xml
+#   ignore_errors: yes

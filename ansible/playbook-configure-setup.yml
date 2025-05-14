@@ -1,0 +1,134 @@
+---
+- name: Setup Wazuh
+  hosts: siem
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Install XRDP
+      ansible.builtin.include_tasks: tasks/on-premise_setup/install_xrdp.yml
+    - name: Install Chrome
+      ansible.builtin.include_tasks: tasks/on-premise_setup/install_chrome.yml
+
+
+- name: Setup Portspoof
+  hosts: deception
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Install and Start Portstoof
+      ansible.builtin.include_tasks: tasks/on-premise_setup/setup_portspoof.yml
+
+
+- name: Configure Domain Controller
+  hosts: dc
+  gather_facts: true
+  vars_files:
+    - host_vars/dc.yml
+  tasks:
+    - name: Include AD DS installation tasks
+      ansible.builtin.include_tasks: tasks/on-premise_setup/install_ad.yml
+    - name: Include user configuration tasks
+      ansible.builtin.include_tasks: tasks/on-premise_setup/setup_ad_users.yml
+    - name: Download Azure AD Connect
+      ansible.builtin.include_tasks: tasks/on-premise_setup/download_azureadconnect.yml
+
+- name: Join Workstation to Domain
+  hosts: workstation
+  gather_facts: true
+  vars_files:
+    - host_vars/workstation.yml
+  tasks:
+    - name: Include domain join tasks
+      ansible.builtin.include_tasks: tasks/on-premise_setup/join_domain.yml
+
+
+- name: User Setup for Scenario-1
+  hosts: dc
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-1.yml
+  tasks:
+    - name: Add User
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_users.yml
+
+- name: Setup for Scenario-1
+  hosts: workstation
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-1.yml
+  tasks:
+    - name: Install Chrome
+      ansible.builtin.include_tasks: tasks/on-premise_setup/download_chrome.yml
+    - name: Assign Local Group
+      ansible.builtin.include_tasks: tasks/on-premise_setup/assign_local_group.yml
+    - name: Start cmd.exe in background
+      ansible.builtin.include_tasks: tasks/on-premise_setup/run_cmd_in_background.yml
+    - name: Create creds.txt
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_creds.yml
+
+- name: User Setup for Scenario-2
+  hosts: dc
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-2.yml
+  tasks:
+    - name: Add User
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_users.yml
+    - name: Create Deceptive File
+      ansible.builtin.include_tasks: tasks/on-premise_setup/copy_file.yml
+
+- name: Setup for Scenario-2
+  hosts: workstation
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-2.yml
+  tasks:
+    - name: Assign Local Group
+      ansible.builtin.include_tasks: tasks/on-premise_setup/assign_local_group.yml
+    - name: Create Sheduled Task
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_scheduled_task.yml
+
+- name: User Setup for Scenario-3
+  hosts: dc
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-3.yml
+  tasks:
+    - name: Add User
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_users.yml
+    - name: Enable Unconstrained Delegation
+      ansible.builtin.include_tasks: tasks/on-premise_setup/enable_unconstrained_delegation.yml
+    - name: Disable Logon Hours
+      ansible.builtin.include_tasks: tasks/on-premise_setup/disable_logon_hours.yml
+
+
+- name: Setup for Scenario-3
+  hosts: workstation
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-3.yml
+  tasks:
+    - name: Assign Local Group
+      ansible.builtin.include_tasks: tasks/on-premise_setup/assign_local_group.yml
+
+- name: User Setup for Scenario-4
+  hosts: dc
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-4.yml
+  tasks:
+    - name: Add User
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_users.yml
+    - name: Add SPN
+      ansible.builtin.include_tasks: tasks/on-premise_setup/create_spn.yml
+
+- name: Setup for Scenario-4
+  hosts: workstation
+  gather_facts: true
+  vars_files:
+    - scenario_vars/scenario-4.yml
+  tasks:
+    - name: Assign Local Group
+      ansible.builtin.include_tasks: tasks/on-premise_setup/assign_local_group.yml
+    - name: Create Deceptive File
+      ansible.builtin.include_tasks: tasks/on-premise_setup/copy_file.yml

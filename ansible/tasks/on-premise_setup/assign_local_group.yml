@@ -1,0 +1,12 @@
+---
+- name: Add domain user to local group
+  win_group_membership:
+    name: "{{ group }}"
+    members: "{{ users }}"
+    state: present
+
+- name: Restart the computer
+  win_reboot:
+    msg: "Restarting computer to complete user setup"
+    pre_reboot_delay: 15
+    post_reboot_delay: 30

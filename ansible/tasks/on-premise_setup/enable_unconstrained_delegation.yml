@@ -1,0 +1,5 @@
+---
+- name: Enable unconstrained delegation for user
+  ansible.windows.win_powershell:
+    script: |
+      Set-ADUser -Identity "{{ unconstrained_delegation_username }}" -TrustedForDelegation $true

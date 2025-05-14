@@ -1,0 +1,10 @@
+---
+- name: Disable user logon hours
+  ansible.windows.win_powershell: 
+    script: | 
+      $Hours = New-Object byte[] 21
+
+      $ReplaceHashTable = New-Object Hashtable
+      $ReplaceHashTable.Add("logonHours", $Hours)
+
+      Set-ADUser -Identity "{{ decoy_username }}" -Replace $ReplaceHashTable

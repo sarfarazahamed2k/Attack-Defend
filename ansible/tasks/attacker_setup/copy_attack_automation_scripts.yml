@@ -1,0 +1,34 @@
+- name: Copy wait_for_prompt.exp
+  copy:
+    src: "/workspace/ansible/tasks/attacker_setup/files/wait_for_prompt.exp"
+    dest: "/home/user_administrator/wait_for_prompt.exp"
+    mode: '0744'
+
+- name: Copy Scenario-1.sh
+  copy:
+    src: "/workspace/ansible/tasks/attacker_setup/files/Scenario-1.sh"
+    dest: "/home/user_administrator/Scenario-1.sh"
+    mode: '0744'
+
+- name: Copy Scenario-2.sh
+  copy:
+    src: "/workspace/ansible/tasks/attacker_setup/files/Scenario-2.sh"
+    dest: "/home/user_administrator/Scenario-2.sh"
+    mode: '0744'
+
+- name: Copy Scenario-3.sh
+  copy:
+    src: "/workspace/ansible/tasks/attacker_setup/files/Scenario-3.sh"
+    dest: "/home/user_administrator/Scenario-3.sh"
+    mode: '0744'
+
+- name: Copy Scenario-4.sh
+  copy:
+    src: "/workspace/ansible/tasks/attacker_setup/files/Scenario-4.sh"
+    dest: "/home/user_administrator/Scenario-4.sh"
+    mode: '0744'
+
+- name: Copy CredentialKatz.exe
+  copy:
+    src: "/workspace/ansible/tasks/attacker_setup/CredentialKatz.exe"
+    dest: "/home/user_administrator/CredentialKatz.exe"

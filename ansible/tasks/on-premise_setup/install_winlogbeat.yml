@@ -1,0 +1,41 @@
+---
+- name: Create directory if it doesn't exist
+  win_file:
+    path: "C:\\Program Files"
+    state: directory
+
+- name: Download Winlogbeat zip file
+  win_get_url:
+    url: "https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-8.17.2-windows-x86_64.zip"
+    dest: "C:\\Program Files\\winlogbeat-8.17.2-windows-x86_64.zip"
+    force: no
+
+- name: Extract Winlogbeat zip file
+  win_unzip:
+    src: "C:\\Program Files\\winlogbeat-8.17.2-windows-x86_64.zip"
+    dest: "C:\\Program Files\\"
+    delete_archive: no
+
+- name: Update Elasticsearch hosts in winlogbeat.yml
+  win_lineinfile:
+    path: "C:\\Program Files\\winlogbeat-8.17.2-windows-x86_64\\winlogbeat.yml"
+    regexp: '^\s*hosts:\s*\["localhost:9200"\]'
+    line: '  hosts: ["10.0.1.10:9200"]'
+    state: present
+
+- name: Update Kibana host in winlogbeat.yml
+  win_lineinfile:
+    path: "C:\\Program Files\\winlogbeat-8.17.2-windows-x86_64\\winlogbeat.yml"
+    regexp: '^\s*#host:\s*"localhost:5601"'
+    line: '  host: "10.0.1.10:5601"'
+    state: present
+
+- name: Run Winlogbeat with the configured settings
+  ansible.windows.win_shell: 'echo "R" | .\install-service-winlogbeat.ps1'
+  args:
+    chdir: 'C:\Program Files\winlogbeat-8.17.2-windows-x86_64\'
+
+- name: Run Winlogbeat setup to create index templates and dashboards
+  ansible.windows.win_shell: '.\winlogbeat.exe setup -e'
+  args:
+    chdir: 'C:\Program Files\winlogbeat-8.17.2-windows-x86_64\'

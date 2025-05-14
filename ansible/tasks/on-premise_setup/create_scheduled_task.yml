@@ -1,0 +1,12 @@
+---
+- name: Create scheduled task
+  community.windows.win_scheduled_task:
+    name: WhoAmITask
+    description: Task to run whoami with runas
+    actions:
+      - path: C:\Windows\System32\runas.exe
+        arguments: /user:{{domain_name}}\{{ run_as_username }} /password:{{ run_as_password }} "C:\Windows\System32\whoami.exe"
+    triggers:
+      - type: boot
+    state: present
+    enabled: yes

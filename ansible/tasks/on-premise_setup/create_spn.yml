@@ -1,0 +1,15 @@
+---
+- name: Create SPNs
+  microsoft.ad.user:
+    name: "{{ item.display_name }}"
+    sam_account_name: "{{ item.username }}"
+    upn: "{{ item.username }}@{{ domain_name }}"
+    password: "{{ item.password }}"
+    path: "{{ item.ou }}"
+    spn:
+      set:
+        - "{{ item.mssql_spn }}"
+    state: present
+    enabled: yes
+    update_password: on_create
+  loop: "{{ spn_users }}"

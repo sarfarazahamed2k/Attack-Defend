@@ -1,0 +1,10 @@
+[attack_vm]
+attackvm ansible_host=${attack_vm_ip}
+
+[attack_vm:vars]
+ansible_user=${admin_user}
+ansible_ssh_private_key_file=/workspace/terraform/azure_key
+ansible_connection=ssh
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+default_frontdoor_domain=${default_frontdoor_domain}
+

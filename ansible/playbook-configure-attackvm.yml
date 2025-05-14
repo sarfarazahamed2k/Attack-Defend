@@ -1,0 +1,16 @@
+---
+- name: Setup Attack VM
+  hosts: attack_vm
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Setup Attacker VM
+      ansible.builtin.include_tasks: tasks/attacker_setup/initial_setup.yml
+
+- name: Copy Attack Automation Scripts
+  hosts: attack_vm
+  gather_facts: true
+  tasks:
+    - name: Copy scripts to VM
+      ansible.builtin.include_tasks: tasks/attacker_setup/copy_attack_automation_scripts.yml
+

@@ -1,0 +1,32 @@
+[dc]
+csrp-dc ansible_host=${win_server_ip}
+
+[workstation]
+workstation-1 ansible_host=${win11_ip}
+
+[siem]
+wazuh ansible_host=${wazuh_ip}
+
+[deception]
+portspoof ansible_host=${portspoof_ip}
+
+[windows:children]
+dc
+workstation
+
+[linux:children]
+siem
+deception
+
+[windows:vars]
+ansible_user=${admin_user}
+ansible_password=${admin_password}
+ansible_connection=winrm
+ansible_winrm_transport=credssp
+ansible_winrm_server_cert_validation=ignore
+
+[linux:vars]
+ansible_user=${admin_user}
+ansible_ssh_private_key_file=/workspace/terraform/azure_key
+ansible_connection=ssh
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'

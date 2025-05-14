@@ -1,0 +1,64 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  apt:
+    upgrade: yes
+
+- name: Install XRDP and XFCE packages
+  apt:
+    name:
+      - xrdp
+      - xfce4
+      - xfce4-goodies
+    state: present
+
+- name: Configure XFCE session for users
+  lineinfile:
+    path: "{{ item.homedir }}/.xsession"
+    line: "xfce4-session"
+    create: yes
+    owner: "{{ item.user }}"
+    group: "{{ item.user }}"
+  with_items:
+    - { user: "{{ ansible_user }}", homedir: "/home/{{ ansible_user }}" }
+
+- name: Backup startwm.sh
+  copy:
+    src: /etc/xrdp/startwm.sh
+    dest: /etc/xrdp/startwm.sh.bak
+    remote_src: yes
+
+- name: Comment out existing Xsession lines
+  replace:
+    path: /etc/xrdp/startwm.sh
+    regexp: "{{ item }}"
+    replace: "#{{ item }}"
+  with_items:
+    - 'test -x /etc/X11/Xsession && exec /etc/X11/Xsession'
+    - 'exec /bin/sh /etc/X11/Xsession'
+
+- name: Add startxfce4 to startwm.sh
+  lineinfile:
+    path: /etc/xrdp/startwm.sh
+    line: "startxfce4"
+
+- name: Enable and start XRDP service
+  systemd:
+    name: xrdp
+    state: started
+    enabled: yes
+
+- name: Allow RDP through UFW
+  ufw:
+    rule: allow
+    port: '3389'
+    proto: tcp
+
+- name: Restart XRDP service
+  systemd:
+    name: xrdp
+    state: restarted

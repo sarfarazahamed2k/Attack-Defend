@@ -1,0 +1,9 @@
+[linux]
+ubuntu ansible_host=${web_app_ip}
+
+[linux:vars]
+ansible_user=${admin_user}
+ansible_ssh_private_key_file=/workspace/terraform/azure_key
+ansible_connection=ssh
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+

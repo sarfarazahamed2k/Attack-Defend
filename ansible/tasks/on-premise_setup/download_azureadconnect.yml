@@ -1,0 +1,6 @@
+---
+- name: Download Azure AD Connect to specified path
+  ansible.windows.win_get_url:
+    url: "{{ installer_url }}"
+    dest: "{{ installer_path }}"
+

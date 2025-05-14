@@ -1,0 +1,28 @@
+domain_name: "${domain_name}"
+
+domain_users:
+  - username: "${scenario4_users[0].username}"
+    description: "${scenario4_users[0].description}"
+    display_name: "${scenario4_users[0].display_name}"
+    password: "${scenario4_users[0].password}"
+    ou: "${scenario4_users[0].ou}"
+    groups:
+      - "${scenario4_users[0].groups[0]}"
+
+spn_users:
+%{ for user in spn_users ~}
+  - display_name: "${user.display_name}"
+    username: "${user.username}"
+    password: "${user.password}"
+    ou: "${user.ou}"
+    mssql_spn: "${user.mssql_spn}"
+%{ endfor ~}
+
+users:
+%{ for user in scenario4_config.users ~}
+  - "${user}"
+%{ endfor ~}
+
+group: "${scenario4_config.group}"
+
+filename: "High_Profile_Lawsuit_Details.docx"

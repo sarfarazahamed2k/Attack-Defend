@@ -1,0 +1,23 @@
+---
+- name: Set DNS server to Domain Controller
+  win_dns_client:
+    adapter_names: "Ethernet"
+    dns_servers:
+      - "{{ domain_controller_ip }}"
+  register: dns_result
+
+- name: Wait for DNS changes to take effect
+  win_wait_for:
+    timeout: 60
+  when: dns_result.changed
+
+- name: Join computer to domain
+  microsoft.ad.membership:
+    dns_domain_name: "{{ domain_name }}"
+    hostname: "{{ workstation_hostname }}"
+    domain_admin_user: "{{ domain_admin }}"
+    domain_admin_password: "{{ domain_admin_password }}"
+    domain_server: "{{ domain_server }}"
+    state: domain
+    reboot: true
+    reboot_timeout: 300

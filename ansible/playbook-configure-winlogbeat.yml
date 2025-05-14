@@ -1,0 +1,9 @@
+- name: Send logs to ELK
+  hosts: windows
+  gather_facts: true
+  tasks:
+    - name: Setup Sysmon
+      ansible.builtin.include_tasks: tasks/on-premise_setup/install_sysmon.yml
+    - name: Install winlogbeat
+      ansible.builtin.include_tasks: tasks/on-premise_setup/install_winlogbeat.yml
+

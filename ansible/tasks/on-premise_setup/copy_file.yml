@@ -1,0 +1,10 @@
+- name: Ensure C:\Temp directory exists
+  win_file:
+    path: C:\Temp
+    state: directory
+
+- name: Create file in C:\Temp
+  win_copy:
+    src: "/workspace/files/{{ filename }}"
+    dest: "C:\\Temp\\{{ filename }}"
+

@@ -1,0 +1,24 @@
+- name: Launch CMD as different user in background
+  community.windows.win_scheduled_task:
+    name: StartAndCloseCmdEvery10Minutes
+    description: Starts cmd.exe
+    actions:
+      - path: powershell.exe
+        arguments: >-
+          -NoProfile -WindowStyle Hidden -Command "try { Stop-Process -Name cmd -Force -ErrorAction SilentlyContinue } catch { };
+          Start-Process cmd.exe -WindowStyle Hidden"
+    triggers:
+      - type: boot
+        repetition:
+          interval: PT10M
+          duration: P2D
+    username: "{{ domain_name }}\\{{ run_as_username }}"
+    password: "{{ run_as_password }}"
+    logon_type: password
+    run_level: highest
+    state: present
+    enabled: yes
+
+- name: Start the scheduled task immediately
+  community.windows.win_scheduled_task:
+    name: StartAndCloseCmdEvery10Minutes

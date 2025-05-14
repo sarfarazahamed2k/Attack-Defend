@@ -1,0 +1,130 @@
+---
+- name: Install apt package requirements
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - gpg-agent
+    - curl
+    - procps
+    - net-tools
+    - gnupg
+
+- name: Download Elasticsearch GPG key
+  get_url:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dest: /etc/apt/keyrings/GPG-KEY-elasticsearch.key
+    mode: '0644'
+
+- name: Add Elasticsearch repository
+  copy:
+    content: "deb [signed-by=/etc/apt/keyrings/GPG-KEY-elasticsearch.key] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    dest: /etc/apt/sources.list.d/elastic-8.x.list
+    mode: '0644'
+
+- name: Update repositories cache and install "elasticsearch" package
+  ansible.builtin.apt:
+    name: elasticsearch
+    update_cache: yes
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Start and enable Elasticsearch service
+  systemd:
+    name: elasticsearch
+    state: started
+    enabled: yes
+
+- name: Configure Elasticsearch settings
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: "^#{{ item.key }}:"
+    line: "{{ item.key }}: {{ item.value }}"
+  loop:
+    - key: network.host
+      value: 0.0.0.0
+    - key: http.port
+      value: 9200
+
+- name: Restart Elasticsearch service
+  systemd:
+    name: elasticsearch
+    state: restarted
+
+- name: Run Elasticsearch Reset Password Command
+  command: /usr/share/elasticsearch/bin/elasticsearch-reset-password auto -u elastic
+  args:
+    stdin: "y\n"
+  register: reset_password_output
+
+- name: Debug Elasticsearch password reset stdout
+  debug:
+    msg: "{{ reset_password_output.stdout }}"
+
+- name: Install "kibana" package
+  ansible.builtin.apt:
+    name: kibana
+
+- name: Start and enable Kibana service
+  systemd:
+    name: kibana
+    state: started
+    enabled: yes
+
+- name: Configure Kibana settings
+  lineinfile:
+    path: /etc/kibana/kibana.yml
+    regexp: "^#{{ item.key }}:"
+    line: "{{ item.key }}: {{ item.value }}"
+  loop:
+    - { key: "server.port", value: "5601" }
+    - { key: "server.host", value: "0.0.0.0" }
+    - { key: "elasticsearch.hosts", value: '["http://localhost:9200"]' }
+
+- name: Restart Kibana service
+  systemd:
+    name: kibana
+    state: restarted
+
+- name: Run Elasticsearch Create Enrollment Token Command
+  shell: /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+  register: token_response
+- name: Extract Token from Response
+  set_fact:
+    enrollment_token: "{{ token_response.stdout }}"
+- name: Run Kibana Enrollment Token Command
+  shell: /usr/share/kibana/bin/kibana-setup --enrollment-token {{ enrollment_token }}
+  args:
+    stdin: "y\n"
+
+- name: Restart Kibana service
+  systemd:
+    name: kibana
+    state: restarted
+
+- name: Install Logstash package
+  ansible.builtin.apt:
+    name:
+      - logstash
+    state: present
+
+
+
+
+
+
+
+# - name: Start and enable Logstash service
+#   systemd:
+#     name: logstash
+#     state: started
+#     enabled: yes
+
+# - name: Start and enable Filebeat service
+#   systemd:
+#     name: filebeat
+#     state: started
+#     enabled: yes

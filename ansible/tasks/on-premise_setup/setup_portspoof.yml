@@ -1,0 +1,28 @@
+---
+- name: Update apt and install portspoof with insecure options
+  shell: |
+    apt-get update --allow-insecure-repositories
+    apt-get install -y portspoof --allow-unauthenticated
+
+- name: Redirect TCP ports 1-21 to port 4444
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: 1:21
+    jump: REDIRECT
+    to_ports: 4444
+
+- name: Redirect TCP ports 23-65535 to port 4444
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: 23:65535
+    jump: REDIRECT
+    to_ports: 4444
+
+- name: Start portspoof service with signature file
+  shell: "portspoof -p 4444 -s /etc/portspoof/portspoof_signatures &"
+  async: 45
+  poll: 0

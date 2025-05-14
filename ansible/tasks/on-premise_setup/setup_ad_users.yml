@@ -1,0 +1,96 @@
+---
+- name: Add Administrator User
+  microsoft.ad.user:
+    name: "{{ admin_user_display_name }}"
+    sam_account_name: "{{ admin_user_name }}"
+    upn: "{{ admin_user_name }}@{{ domain_name }}"
+    password: "{{ admin_password }}"
+    path: "{{ user_ou }}"
+    state: present
+    enabled: yes
+    update_password: on_create
+    groups:
+      add:
+        - Domain Admins
+        - Enterprise Admins
+
+- name: Add Entra Connect User
+  microsoft.ad.user:
+    name: "{{ entra_connect_display_name }}"
+    sam_account_name: "{{ entra_connect_user_name }}"
+    upn: "{{ entra_connect_user_name }}@{{ domain_name }}"
+    password: "{{ entra_connect_password }}"
+    path: "{{ user_ou }}"
+    state: present
+    enabled: yes
+    update_password: on_create
+
+- name: Granting permissions for Entra User
+  ansible.windows.win_powershell:
+    script: |
+      $identity = New-Object System.Security.Principal.NTAccount("{{ domain_name }}\{{ entra_connect_user_name }}")
+
+      $rootDSE = Get-ADRootDSE
+      $domainDN = $rootDSE.DefaultNamingContext
+      $domainObj = [ADSI]"LDAP://$domainDN"
+      $acl = $domainObj.psbase.ObjectSecurity
+
+      $ace1 = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+        $identity,
+        "ExtendedRight",
+        "Allow",
+        [guid]"{{ guid_replicate_dc }}",
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
+      )
+      $acl.AddAccessRule($ace1)
+
+      $ace2 = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+        $identity,
+        "ExtendedRight",
+        "Allow",
+        [guid]"{{ guid_replicate_dc_all }}",
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
+      )
+      $acl.AddAccessRule($ace2)
+
+      $domainObj.psbase.ObjectSecurity = $acl
+      $domainObj.psbase.CommitChanges()
+
+      $UsersContainer = "CN=Users,{{ domain_path }}"
+      $UserObj = [ADSI]"LDAP://$UsersContainer"
+      $acl = $UserObj.psbase.ObjectSecurity
+
+      $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+        $identity,
+        "WriteProperty",
+        "Allow",
+        [guid]::Empty,
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
+      )
+      $acl.AddAccessRule($ace)
+
+      $aceResetPassword = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+        $identity,
+        "ExtendedRight",
+        "Allow",
+        [guid]"{{ guid_reset_password }}",
+        [System.DirectoryServices.ActiveDirectorySecurityInheritance]::None
+      )
+      $acl.AddAccessRule($aceResetPassword)
+
+      $UserObj.psbase.ObjectSecurity = $acl
+      $UserObj.psbase.CommitChanges()
+
+- name: Restart Server
+  ansible.windows.win_reboot:
+    msg: "Restarting server to complete AD configuration"
+    pre_reboot_delay: 15
+    post_reboot_delay: 60
+
+- name: Wait for Active Directory Web Services to be running
+  ansible.windows.win_service_info:
+    name: ADWS
+  register: adws_service
+  until: adws_service.exists and adws_service.services[0].state == "started"
+  timeout: 600
+  delay: 20

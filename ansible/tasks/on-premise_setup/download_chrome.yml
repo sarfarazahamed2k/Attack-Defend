@@ -1,0 +1,19 @@
+- name: Download Chrome installer
+  win_get_url:
+    url: "{{ chrome_installer_url }}"
+    dest: "{{ temp_path }}"
+  register: download_result
+
+- name: Install Chrome silently
+  win_package:
+    path: "{{ temp_path }}"
+    arguments: "/silent /install"
+    state: present
+    expected_return_code: [0, 3010]
+  when: download_result.changed
+
+- name: Clean up installer
+  win_file:
+    path: "{{ temp_path }}"
+    state: absent
+  when: download_result.changed
