@@ -374,17 +374,6 @@ wazuhIP=$(terraform show | grep "wazuh_pip" -A 6 | grep "ip_address" | awk -F '"
 wazuhPassword=$(cat /workspace/setup_scripts/output.txt | grep -o "Password: [^\\]*" | cut -d' ' -f2)
 wazuhURL=$(cat /workspace/setup_scripts/output.txt | grep -oP '(?<=the web interface)[^\\n]*')
 
-echo "Login as these users and set up MFA:"
-echo "Username1: $scenario1AzureUsername@$entraIDDomain"
-echo "Password1: $scenario1AzurePassword"
-echo "Username2: $scenario2Username@$entraIDDomain"
-echo "Password2: $scenario2Password"
-echo "Username3: $scenario3Username@$entraIDDomain"
-echo "Password3: $scenario3Password"
-echo "Username4: $scenario4ServiceUsername@$entraIDDomain"
-echo "Password4: $scenrio4ServicePassword"
-echo ""
-
 echo "Wazuh Portal Details:"
 echo "Wazuh VM IP: $wazuhIP"
 echo "URL: $wazuhURL"
